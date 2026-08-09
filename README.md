@@ -1,6 +1,6 @@
 # Swing City — FPV Edition
 
-A high-speed superhero traversal prototype focused on FPV-style web-swinging through dense glass city canyons.
+A high-speed superhero traversal prototype focused on web-swinging through dense glass city canyons.
 
 ## Run
 
