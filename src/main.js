@@ -110,15 +110,23 @@ composer.addPass(new OutputPass());
 // Procedural day/night sky with cloud cover, stars, and a moon disc.
 const skyMaterial=new THREE.ShaderMaterial({
     side:THREE.BackSide,depthWrite:false,
-    uniforms:{nightMix:{value:0}},
+    uniforms:{nightMix:{value:0},time:{value:0},flightSpeed:{value:0}},
     vertexShader:`varying vec3 vP; void main(){vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`,
     fragmentShader:`
       varying vec3 vP;
       uniform float nightMix;
+      uniform float time;
+      uniform float flightSpeed;
       float cloud(vec3 p){
         return sin(p.x*7.4+sin(p.z*5.1))*sin(p.z*8.2-p.x*2.7)*.5+.5;
       }
       float hash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+      float starLayer(vec3 d,float scale,float threshold,float seed){
+        vec3 cell=floor(d*scale+seed);
+        float star=smoothstep(threshold,1.0,hash(cell));
+        float twinkle=.82+.18*sin(time*(1.4+hash(cell+9.0)*2.8)+hash(cell+21.0)*6.283);
+        return star*twinkle;
+      }
       void main(){
         vec3 d=normalize(vP);
         float horizon=smoothstep(-.12,.55,d.y);
@@ -126,10 +134,14 @@ const skyMaterial=new THREE.ShaderMaterial({
         float c=smoothstep(.34,.76,cloud(d*2.8)+cloud(d.zxy*5.3)*.28);
         vec3 dayCol=mix(low,high,horizon);
         dayCol=mix(dayCol,vec3(.98,.98,.95),c*.72*smoothstep(-.05,.75,d.y));
-        vec3 nightCol=mix(vec3(.025,.045,.085),vec3(.004,.009,.025),horizon);
-        float stars=step(.9965,hash(floor(d*420.0)))*smoothstep(.05,.35,d.y)*(1.0-c*.6);
+        vec3 nightCol=mix(vec3(.035,.135,.275),vec3(.003,.012,.052),horizon);
+        nightCol+=vec3(.025,.075,.15)*pow(1.0-horizon,3.0);
+        float starMask=smoothstep(-.04,.18,d.y)*(1.0-c*.18);
+        float stars=max(starLayer(d,650.0,.982,0.0),starLayer(d.yzx,1080.0,.991,43.0)*.82)*starMask;
+        stars+=starLayer(d.zxy,1550.0,.996,87.0)*.65*starMask;
+        stars*=1.0+flightSpeed*.22;
         float moon=smoothstep(.9984,.9995,dot(d,normalize(vec3(-.42,.72,.28))));
-        nightCol+=stars*vec3(.7,.82,1.0)+moon*vec3(1.0,.94,.73)*1.8;
+        nightCol+=stars*vec3(.78,.9,1.0)*1.35+moon*vec3(.78,.87,1.0)*1.5;
         vec3 col=mix(dayCol,nightCol,nightMix);
         gl_FragColor=vec4(col,1.);
       }`,
@@ -364,7 +376,7 @@ function addTowerMass(cx,cz,w,d,bottom,height,material){
     swingAnchors.push(new THREE.Vector3(cx,y,cz+d/2+.18),new THREE.Vector3(cx,y,cz-d/2-.18));
     swingAnchors.push(new THREE.Vector3(cx+w/2+.18,y,cz),new THREE.Vector3(cx-w/2-.18,y,cz));
     const lightRoll=seeded(cx+floorIndex*3.1,cz-floorIndex*2.7,45);
-    if(lightRoll>.42&&w>4&&d>4){
+    if(lightRoll>.3&&w>4&&d>4){
       const lights=lightRoll>.72?warmWindowLightInstances:coolWindowLightInstances;
       const zSide=seeded(cx,cz+floorIndex,46)>.5?1:-1;
       const xSide=seeded(cx-floorIndex,cz,47)>.5?1:-1;
@@ -495,8 +507,8 @@ addInstancedParts(balconyInstances,new THREE.MeshStandardMaterial({color:0xb9aa8
 addInstancedParts(railingInstances,new THREE.MeshStandardMaterial({color:0x403d36,roughness:.38,metalness:.62}),false);
 addInstancedParts(corniceInstances,new THREE.MeshStandardMaterial({color:0xd8caa7,roughness:.9,metalness:0}),true);
 addInstancedParts(rooftopUnitInstances,new THREE.MeshStandardMaterial({color:0x6e706b,roughness:.74,metalness:.28}),true);
-const warmWindowMaterial=new THREE.MeshStandardMaterial({color:0xffd993,emissive:0xffa62b,emissiveIntensity:0,roughness:.18,metalness:.08});
-const coolWindowMaterial=new THREE.MeshStandardMaterial({color:0xc7e2ff,emissive:0x74aaff,emissiveIntensity:0,roughness:.16,metalness:.12});
+const warmWindowMaterial=new THREE.MeshStandardMaterial({color:0xffe2a0,emissive:0xffad32,emissiveIntensity:0,roughness:.14,metalness:.05});
+const coolWindowMaterial=new THREE.MeshStandardMaterial({color:0xe4f3ff,emissive:0x8bc6ff,emissiveIntensity:0,roughness:.12,metalness:.08});
 buildingLightMaterials.push(warmWindowMaterial,coolWindowMaterial);
 addInstancedParts(warmWindowLightInstances,warmWindowMaterial,false);
 addInstancedParts(coolWindowLightInstances,coolWindowMaterial,false);
@@ -678,11 +690,11 @@ function cabiny(height){return height*.5+.08;}
 
 let nightMode=false;
 let nightBlend=0;
-const dayBackground=new THREE.Color(0x70b9e3),nightBackground=new THREE.Color(0x030716);
-const dayFog=new THREE.Color(0xbcd8df),nightFog=new THREE.Color(0x10182a);
-const dayAmbientSky=new THREE.Color(0xf5fbff),nightAmbientSky=new THREE.Color(0x52658d);
-const dayAmbientGround=new THREE.Color(0x594f42),nightAmbientGround=new THREE.Color(0x090b12);
-const daySun=new THREE.Color(0xfff2d0),nightMoon=new THREE.Color(0x9ebaff);
+const dayBackground=new THREE.Color(0x70b9e3),nightBackground=new THREE.Color(0x02091e);
+const dayFog=new THREE.Color(0xbcd8df),nightFog=new THREE.Color(0x0a2948);
+const dayAmbientSky=new THREE.Color(0xf5fbff),nightAmbientSky=new THREE.Color(0x7599d0);
+const dayAmbientGround=new THREE.Color(0x594f42),nightAmbientGround=new THREE.Color(0x07101f);
+const daySun=new THREE.Color(0xfff2d0),nightMoon=new THREE.Color(0xaac7ff);
 
 function toggleNightMode(){
   nightMode=!nightMode;
@@ -693,22 +705,22 @@ function updateDayNight(dt){
   const target=nightMode?1:0;
   nightBlend=THREE.MathUtils.damp(nightBlend,target,2.25,dt);
   skyMaterial.uniforms.nightMix.value=nightBlend;
+  skyMaterial.uniforms.time.value=performance.now()*.001;
   scene.background.copy(dayBackground).lerp(nightBackground,nightBlend);
   scene.fog.color.copy(dayFog).lerp(nightFog,nightBlend);
-  scene.fog.density=THREE.MathUtils.lerp(.0009,.00122,nightBlend);
+  scene.fog.density=THREE.MathUtils.lerp(.0009,.00072,nightBlend);
   ambientLight.color.copy(dayAmbientSky).lerp(nightAmbientSky,nightBlend);
   ambientLight.groundColor.copy(dayAmbientGround).lerp(nightAmbientGround,nightBlend);
-  ambientLight.intensity=THREE.MathUtils.lerp(2.55,.48,nightBlend);
+  ambientLight.intensity=THREE.MathUtils.lerp(2.55,.68,nightBlend);
   sun.color.copy(daySun).lerp(nightMoon,nightBlend);
-  sun.intensity=THREE.MathUtils.lerp(2.15,.38,nightBlend);
-  renderer.toneMappingExposure=THREE.MathUtils.lerp(1.08,.72,nightBlend);
-  streetlightMaterial.emissiveIntensity=THREE.MathUtils.lerp(.18,4.8,nightBlend);
-  headlightMaterial.emissiveIntensity=THREE.MathUtils.lerp(.8,5.2,nightBlend);
-  taxiSignMaterial.emissiveIntensity=THREE.MathUtils.lerp(.12,2.1,nightBlend);
-  for(const material of buildingLightMaterials)material.emissiveIntensity=THREE.MathUtils.lerp(0,2.6,nightBlend);
+  sun.intensity=THREE.MathUtils.lerp(2.15,.62,nightBlend);
+  renderer.toneMappingExposure=THREE.MathUtils.lerp(1.08,.9,nightBlend);
+  streetlightMaterial.emissiveIntensity=THREE.MathUtils.lerp(.18,6.2,nightBlend);
+  headlightMaterial.emissiveIntensity=THREE.MathUtils.lerp(.8,6.8,nightBlend);
+  taxiSignMaterial.emissiveIntensity=THREE.MathUtils.lerp(.12,2.8,nightBlend);
+  warmWindowMaterial.emissiveIntensity=THREE.MathUtils.lerp(0,3.8,nightBlend);
+  coolWindowMaterial.emissiveIntensity=THREE.MathUtils.lerp(0,4.5,nightBlend);
   for(const entry of nightBuildingMaterials)entry.material.emissiveIntensity=entry.intensity*nightBlend;
-  for(const material of buildingLightMaterials)material.emissiveIntensity=THREE.MathUtils.lerp(0,2.6,nightBlend);
-  for(const material of buildingLightMaterials)material.emissiveIntensity=THREE.MathUtils.lerp(0,2.6,nightBlend);
 }
 
 // Articulated red-and-blue web hero, designed to read clearly through the close FPV chase camera.
@@ -1125,6 +1137,7 @@ function update(dt){
   updateWebLine(webs.right,new THREE.Vector3(.58,.55,.03));
 
   const speed=state.vel.length();
+  skyMaterial.uniforms.flightSpeed.value=nightBlend*THREE.MathUtils.clamp((speed-18)/52,0,1);
   updateAudio(speed,swinging,dt);
   const desiredFov=THREE.MathUtils.clamp(80+speed*.46,80,110);
   camera.fov=THREE.MathUtils.damp(camera.fov,desiredFov,4.2,dt);camera.updateProjectionMatrix();

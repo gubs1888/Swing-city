@@ -1,3 +1,16 @@
 canvas {
   filter: saturate(.98) contrast(1.05) brightness(1.02);
 }
+
+body.nightMode canvas {
+  filter: saturate(1.18) contrast(1.09) brightness(1.04);
+}
+
+body.nightMode .speedFrame {
+  filter: brightness(2.4) saturate(.65);
+  mix-blend-mode: screen;
+}
+
+body.nightMode #hud::after {
+  background: radial-gradient(circle at 50% 44%, transparent 35%, #06193618 67%, #0106118a 125%), linear-gradient(180deg, #092c6414, #0207132e);
+}
