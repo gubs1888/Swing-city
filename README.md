@@ -51,7 +51,7 @@ swing-city/
 
 The camera is fully automatic. Mouse movement and pointer lock are not used.
 
-## Major improvements in this edition
+## Featuresi n this edition
 
 - Keyboard-only steering and automatic chase camera
 - Ultra-wide, stable close-follow chase camera
