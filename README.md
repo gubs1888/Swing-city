@@ -317,4 +317,4 @@ This project is not affiliated with, endorsed by, or sponsored by Marvel Enterta
 
 *Swing. Release. Dive. Repeat.*
 <img width="1091" height="704" alt="Screenshot From 2026-08-09 13-59-31" src="https://github.com/user-attachments/assets/896211ed-5549-4c3b-8339-b0d5bb29de02" />
-IN GAME SNAP <<
+In-game snap <<
