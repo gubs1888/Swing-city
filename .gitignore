@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Generated build output
+dist/
+
+# Local environment and logs
+.env
+.env.*
+!.env.example
+*.local
+*.log
+npm-debug.log*
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+
+# Local agent metadata
+.agents/
+.codex/

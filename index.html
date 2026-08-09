@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Swing City — FPV Edition</title>
+</head>
+<body>
+  <div id="app"></div>
+  <div id="hud">
+    <div class="brand">SWING CITY <span>FPV EDITION</span></div>
+    <div class="telemetry"><div id="speed">0 km/h</div><div id="status">AIR</div></div>
+    <button id="soundToggle" class="soundToggle" aria-label="Mute sound" aria-pressed="false">SOUND ON</button>
+    <div class="reticle" aria-hidden="true"></div>
+    <div class="speedFrame" aria-hidden="true"></div>
+    <div class="touchControls" aria-label="Web controls">
+      <button id="leftWeb" class="webControl" aria-label="Hold left web"><span>⌁</span></button>
+      <button id="rightWeb" class="webControl" aria-label="Hold right web"><span>⌁</span></button>
+    </div>
+    <div class="keyGuide">
+      <span><kbd>↑</kbd> Forward</span><span><kbd>↓</kbd> Brake</span><span><kbd>←</kbd><kbd>→</kbd> Steer</span>
+      <span><kbd>Z</kbd>/<kbd>X</kbd> Webs</span><span><kbd>SPACE</kbd> Jump</span><span><kbd>SHIFT</kbd> Dive</span><span><kbd>N</kbd> Night</span><span><kbd>M</kbd> Sound</span><span><kbd>R</kbd> Reset</span>
+    </div>
+  </div>
+  <div id="startScreen">
+    <div class="panel">
+      <div class="logo">SWING<br/>CITY</div>
+      <h2>FPV Edition</h2>
+      <p>Dive into the glass canyons with a stable chase camera that widens as your speed climbs.</p>
+      <button id="startBtn">ENTER THE CITY</button>
+      <div class="controlsGrid">
+        <b>↑</b><span>Accelerate</span><b>← →</b><span>Steer</span><b>↓</b><span>Brake</span>
+        <b>Z / X</b><span>Left / right web</span><b>Space</b><span>Jump / wall jump</span><b>Shift</b><span>Air dive</span><b>N</b><span>Day / night</span><b>M</b><span>Sound on / off</span>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
